@@ -2,16 +2,19 @@ import falcon
 import json
 import os
 import requests
+from . import config
 
 class FilmItem(object):
 
     def on_get (self, req, resp, id):
 
+        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+
         extra = 'credits,images,releases,similar_movies,reviews'
 
         r = requests.get('http://api.themoviedb.org/3/movie/'+id,
                             params={
-                                'api_key': os.environ['TMDB_API_KEY'],
+                                'api_key': TMDB_API_KEY,
                                 'append_to_response': extra
                             })
 
@@ -36,9 +39,11 @@ class FilmSearch(object):
 
     def on_get (self, req, resp, query, page=1):
 
+        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+
         r = requests.get('http://api.themoviedb.org/3/search/movie',
                             params={
-                                'api_key': os.environ['TMDB_API_KEY'],
+                                'api_key': TMDB_API_KEY,
                                 'query': query,
                                 'page': page
                             })
@@ -73,8 +78,10 @@ class FilmSet (object):
 
             return
 
+        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+        
         r = requests.get('http://api.themoviedb.org/3/movie/' + set, params={
-            'api_key': os.environ['TMDB_API_KEY'],
+            'api_key': TMDB_API_KEY,
             'page': page
         })
 
