@@ -1,5 +1,5 @@
 import falcon
-from films import FilmItem, FilmSearch, FilmSet
+from api import *
 from wsgiref import simple_server
 
 app = falcon.API()
