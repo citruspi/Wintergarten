@@ -8,7 +8,7 @@ class FilmItem(object):
 
     def on_get (self, req, resp, id):
 
-        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+        TMDB_API_KEY = config.get('TheMovieDB', 'API_KEY')
 
         extra = 'credits,images,releases,similar_movies,reviews'
 
@@ -39,7 +39,7 @@ class FilmSearch(object):
 
     def on_get (self, req, resp, query, page=1):
 
-        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+        TMDB_API_KEY = config.get('TheMovieDB', 'API_KEY')
 
         r = requests.get('http://api.themoviedb.org/3/search/movie',
                             params={
@@ -78,7 +78,7 @@ class FilmSet (object):
 
             return
 
-        TMDB_API_KEY = config.get('production', 'TMDB_API_KEY')
+        TMDB_API_KEY = config.get('TheMovieDB', 'API_KEY')
         
         r = requests.get('http://api.themoviedb.org/3/movie/' + set, params={
             'api_key': TMDB_API_KEY,
