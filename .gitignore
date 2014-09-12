@@ -1,6 +1,6 @@
 *.py[cod]
 
-config.py
+wintergarten.conf
 
 # C extensions
 *.so
