@@ -4,9 +4,48 @@ import os
 import requests
 from . import config
 
+try:
+
+    caching = config.getboolean('Redis', 'cache')
+
+    if caching:
+
+        import redis
+
+        try:
+
+            cache = redis.StrictRedis(host=config.get('Redis', 'host'),
+                                      port=config.get('Redis', 'port'),
+                                      db=config.get('Redis', 'db'),
+                                      password=config.get('Redis', 'password'))
+
+        except Exception:
+
+            cache = redis.StrictRedis(host=config.get('Redis', 'host'),
+                                      port=config.get('Redis', 'port'),
+                                      db=config.get('Redis', 'db'))
+
+except Exception, e:
+
+    print e
+    caching = False
+
 class FilmItem(object):
 
     def on_get (self, req, resp, id):
+
+        if caching:
+
+            key = config.get('Redis', 'namespace') + '_film_title_'+id
+
+            if cache.exists(key):
+
+                film = cache.get(key)
+
+                resp.status = falcon.HTTP_200
+                resp.body = film
+
+                return
 
         TMDB_API_KEY = config.get('TheMovieDB', 'API_KEY')
 
@@ -63,6 +102,13 @@ class FilmItem(object):
                                 if r.status_code == 200:
 
                                     film['availability'][media] = r.json()
+
+            if caching:
+
+                key = config.get('Redis', 'namespace') + '_film_title_'+id
+
+                cache.set(key, json.dumps(film))
+                cache.expire(key, config.get('Redis', 'lifetime'))
 
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(film)
