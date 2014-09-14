@@ -22,6 +22,48 @@ class FilmItem(object):
 
             film = r.json()
 
+            film = {}
+
+            film['info'] = r.json()
+
+            r = requests.get('http://www.canistream.it/services/search',
+                              params={
+                                'movieName': film['info']['title']
+                              },
+                              headers={
+                                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/538.43.40 (KHTML, like Gecko) Version/8.0 Safari/538.43.40'
+                              })
+
+            if r.status_code == 200:
+
+                films = r.json()
+
+                for f in films:
+
+                    if 'imdb' in f['links']:
+
+                        imdb_id = f['links']['imdb'].split('/')[-2]
+
+                        if film['info']['imdb_id'] == imdb_id:
+
+                            film['availability'] = {}
+
+                            for media in ['streaming', 'rental', 'purchase', 'dvd', 'xfinity']:
+
+                                r = requests.get('http://www.canistream.it/services/query',
+                                                    params={
+                                                        'movieId': f['_id'],
+                                                        'attributes': 1,
+                                                        'mediaType': media
+                                                    },
+                                                    headers={
+                                                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/538.43.40 (KHTML, like Gecko) Version/8.0 Safari/538.43.40'
+                                                    })
+
+                                if r.status_code == 200:
+
+                                    film['availability'][media] = r.json()
+
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(film)
 
@@ -79,7 +121,7 @@ class FilmSet (object):
             return
 
         TMDB_API_KEY = config.get('TheMovieDB', 'API_KEY')
-        
+
         r = requests.get('http://api.themoviedb.org/3/movie/' + set, params={
             'api_key': TMDB_API_KEY,
             'page': page
