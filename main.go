@@ -7,9 +7,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	tmdb "github.com/ryanbradynd05/go-tmdb"
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web"
 )
 
 var (
@@ -26,8 +25,10 @@ func init() {
 	client = tmdb.Init(api_key)
 }
 
-func getFilm(c web.C, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(c.URLParams["id"])
+func getFilm(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -53,6 +54,8 @@ func getFilm(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	goji.Get("/film/:id/", getFilm)
-	goji.Serve()
+	r := mux.NewRouter()
+	r.HandleFunc("/film/{id:[0-9]+}/", getFilm)
+	http.Handle("/", r)
+	http.ListenAndServe(":8000", nil)
 }
