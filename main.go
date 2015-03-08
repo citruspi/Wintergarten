@@ -14,14 +14,14 @@ func getFilm(w http.ResponseWriter, r *http.Request) {
 	film, err := films.Get(vars["id"])
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	marshalled, err := json.Marshal(film)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
