@@ -2,40 +2,16 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
 
+	"github.com/citruspi/wintergarten/films"
 	"github.com/gorilla/mux"
-	tmdb "github.com/ryanbradynd05/go-tmdb"
 )
-
-var (
-	client *tmdb.TMDb
-)
-
-func init() {
-	api_key := os.Getenv("TMDB_API_KEY")
-
-	if api_key == "" {
-		log.Fatal("Missing API key")
-	}
-
-	client = tmdb.Init(api_key)
-}
 
 func getFilm(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	id, err := strconv.Atoi(vars["id"])
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	film, err := client.GetMovieInfo(id, nil)
+	film, err := films.Get(vars["id"])
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -55,7 +31,9 @@ func getFilm(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter()
+
 	r.HandleFunc("/film/{id:[0-9]+}/", getFilm)
+
 	http.Handle("/", r)
 	http.ListenAndServe(":8000", nil)
 }
