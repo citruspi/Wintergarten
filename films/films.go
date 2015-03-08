@@ -1,11 +1,12 @@
 package films
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
-	"strconv"
-
-	tmdb "github.com/ryanbradynd05/go-tmdb"
 )
 
 type Film struct {
@@ -143,28 +144,57 @@ type Film struct {
 }
 
 var (
-	client *tmdb.TMDb
+	api_key string
 )
 
 func init() {
-	api_key := os.Getenv("TMDB_API_KEY")
+	api_key = os.Getenv("TMDB_API_KEY")
 
 	if api_key == "" {
 		log.Fatal("Missing API key")
 	}
-
-	client = tmdb.Init(api_key)
 }
 
-func Get(film_id string) (*tmdb.Movie, error) {
-	var film *tmdb.Movie
-	id, err := strconv.Atoi(film_id)
+func Get(film_id string) (Film, error) {
+	film, err := queryTMDb(film_id)
 
 	if err != nil {
 		return film, err
 	}
 
-	film, err = client.GetMovieInfo(id, nil)
+	return film, nil
+}
+
+func queryTMDb(film_id string) (Film, error) {
+	var url string
+	var film Film
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("http://api.themoviedb.org/3/movie/")
+	buffer.WriteString(film_id)
+	buffer.WriteString("?api_key=")
+	buffer.WriteString(api_key)
+	buffer.WriteString("&append_to_response=")
+	buffer.WriteString("alternative_titles,credits,images,keywords,releases,videos,similar")
+
+	url = string(buffer.Bytes())
+
+	resp, err := http.Get(url)
+
+	if err != nil {
+		return film, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return film, err
+	}
+
+	err = json.Unmarshal(body, &film)
 
 	if err != nil {
 		return film, err
