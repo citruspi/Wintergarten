@@ -272,6 +272,49 @@ func Get(film_id string) (Film, error) {
 	return film, nil
 }
 
+func Prepare(film_id string) {
+	var film Film
+
+	client, err := redis.Dial("tcp", "localhost:6379")
+
+	if err != nil {
+		return
+	}
+
+	defer client.Close()
+
+	err = client.Cmd("PING").Err
+	if err != nil {
+		return
+	}
+
+	_, err = client.Cmd("get", film_id).Str()
+
+	if err == nil {
+		return
+	}
+
+	film, err = queryTMDb(film_id)
+
+	if err != nil {
+		return
+	}
+
+	availability, err := determineAvailability(film)
+
+	if err == nil {
+		film.Availability = &availability
+	}
+
+	marshalled, err := json.Marshal(film)
+
+	if err == nil {
+		_ = client.Cmd("set", film_id, marshalled)
+	}
+
+	return
+}
+
 func queryTMDb(film_id string) (Film, error) {
 	var url string
 	var film Film
