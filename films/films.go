@@ -150,82 +150,56 @@ type FilmAvailability struct {
 	Purchase *struct {
 		AmazonVideo *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"amazon_video_purchase,omitempty"`
 		GooglePlay *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"android_purchase,omitempty"`
 		AppleiTunes *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"apple_itunes_purchase,omitempty"`
 		SonyEntertainment *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"sony_purchase,omitempty"`
 		Vudu *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"vudu_purchase,omitempty"`
 		Youtube *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"youtube_purchase,omitempty"`
 		XBOXMarketplace *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"xbox_purchase,omitempty"`
 	} `json:"purchase,omitempty"`
 	Rental *struct {
 		AmazonVideo *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"amazon_video_rental,omitempty"`
 		GooglePlay *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"android_rental,omitempty"`
 		AppleiTunes *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"apple_itunes_rental,omitempty"`
 		SonyEntertainment *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"sony_rental,omitempty"`
 		Vudu *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"vudu_rental,omitempty"`
 		Youtube *struct {
 			URL     string `json:"direct_url,omitempty"`
-			ID      string `json:"external_id,omitempty"`
-			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"youtube_rental,omitempty"`
 	} `json:"rental,omitempty"`
