@@ -174,6 +174,12 @@ type FilmAvailability struct {
 			Price   string `json:"price,omitempty"`
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"sony_rental,omitempty"`
+		Vudu *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"vudu_rental,omitempty"`
 		Youtube *struct {
 			URL     string `json:"direct_url,omitempty"`
 			ID      string `json:"external_id,omitempty"`
