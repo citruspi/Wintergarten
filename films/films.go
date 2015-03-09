@@ -208,11 +208,13 @@ func Get(film_id string) (Film, error) {
 		return film, err
 	}
 
-	film.Availability, err = determineAvailability(film)
+	availability, err := determineAvailability(film)
 
 	if err != nil {
 		return film, err
 	}
+
+	film.Availability = &availability
 
 	return film, nil
 }
