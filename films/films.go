@@ -203,6 +203,12 @@ type FilmAvailability struct {
 			Checked int64  `json:"date_checked,omitempty"`
 		} `json:"youtube_rental,omitempty"`
 	} `json:"rental,omitempty"`
+	Streaming *struct {
+		NetflixInstant *struct {
+			URL     string `json:"direct_url,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"netflix_instant,omitempty"`
+	} `json:"streaming,omitempty"`
 }
 
 var (
@@ -332,7 +338,7 @@ func determineAvailability(film Film) (FilmAvailability, error) {
 	}
 
 	if canIStreamItID != "" {
-		mediaTypes := []string{"rental", "purchase"}
+		mediaTypes := []string{"rental", "purchase", "streaming"}
 
 		for _, mediaType := range mediaTypes {
 			var buffer bytes.Buffer
@@ -365,6 +371,12 @@ func determineAvailability(film Film) (FilmAvailability, error) {
 				}
 			case "purchase":
 				err = json.Unmarshal(body, &availability.Purchase)
+
+				if err != nil {
+					return availability, err
+				}
+			case "streaming":
+				err = json.Unmarshal(body, &availability.Streaming)
 
 				if err != nil {
 					return availability, err
