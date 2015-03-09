@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/fzzy/radix/redis"
 )
 
 type Film struct {
@@ -224,7 +226,32 @@ func init() {
 }
 
 func Get(film_id string) (Film, error) {
-	film, err := queryTMDb(film_id)
+	var film Film
+
+	client, err := redis.Dial("tcp", "localhost:6379")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Close()
+
+	err = client.Cmd("PING").Err
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s, err := client.Cmd("get", film_id).Str()
+
+	if err == nil {
+		err = json.Unmarshal([]byte(s), &film)
+
+		if err == nil {
+			return film, nil
+		}
+	}
+
+	film, err = queryTMDb(film_id)
 
 	if err != nil {
 		return film, err
@@ -237,6 +264,12 @@ func Get(film_id string) (Film, error) {
 	}
 
 	film.Availability = &availability
+
+	marshalled, err := json.Marshal(film)
+
+	if err == nil {
+		_ = client.Cmd("set", film_id, marshalled)
+	}
 
 	return film, nil
 }
