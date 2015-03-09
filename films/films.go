@@ -147,8 +147,50 @@ type Film struct {
 }
 
 type FilmAvailability struct {
-	Streaming *struct {
-	} `json:"streaming,omitempty"`
+	Purchase *struct {
+		AmazonVideo *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"amazon_video_purchase,omitempty"`
+		GooglePlay *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"android_purchase,omitempty"`
+		AppleiTunes *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"apple_itunes_purchase,omitempty"`
+		SonyEntertainment *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"sony_purchase,omitempty"`
+		Vudu *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"vudu_purchase,omitempty"`
+		Youtube *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"youtube_purchase,omitempty"`
+		XBOXMarketplace *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"xbox_purchase,omitempty"`
+	} `json:"purchase,omitempty"`
 	Rental *struct {
 		AmazonVideo *struct {
 			URL     string `json:"direct_url,omitempty"`
@@ -319,30 +361,44 @@ func determineAvailability(film Film) (FilmAvailability, error) {
 		// not available
 	}
 
-	var buffer bytes.Buffer
+	mediaTypes := []string{"rental", "purchase"}
 
-	buffer.WriteString("http://www.canistream.it/services/query?movieId=")
-	buffer.WriteString(canIStreamItID)
-	buffer.WriteString("&attributes=1&mediaType=rental")
+	for _, mediaType := range mediaTypes {
+		var buffer bytes.Buffer
 
-	resp, err = http.Get(string(buffer.Bytes()))
+		buffer.WriteString("http://www.canistream.it/services/query?movieId=")
+		buffer.WriteString(canIStreamItID)
+		buffer.WriteString("&attributes=1&mediaType=")
+		buffer.WriteString(mediaType)
 
-	if err != nil {
-		return availability, err
-	}
+		resp, err = http.Get(string(buffer.Bytes()))
 
-	defer resp.Body.Close()
+		if err != nil {
+			return availability, err
+		}
 
-	body, err = ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
 
-	if err != nil {
-		return availability, err
-	}
+		body, err = ioutil.ReadAll(resp.Body)
 
-	err = json.Unmarshal(body, &availability.Rental)
+		if err != nil {
+			return availability, err
+		}
 
-	if err != nil {
-		return availability, err
+		switch mediaType {
+		case "rental":
+			err = json.Unmarshal(body, &availability.Rental)
+
+			if err != nil {
+				return availability, err
+			}
+		case "purchase":
+			err = json.Unmarshal(body, &availability.Purchase)
+
+			if err != nil {
+				return availability, err
+			}
+		}
 	}
 
 	return availability, nil
