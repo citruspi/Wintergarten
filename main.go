@@ -35,6 +35,21 @@ func getFilmCollection(w http.ResponseWriter, r *http.Request) {
 
 	collectionName := vars["collection"]
 
+	validCollection := false
+	validCollections := []string{"upcoming", "now_playing", "popular", "top_rated"}
+
+	for _, c := range validCollections {
+		if c == collectionName {
+			validCollection = true
+			break
+		}
+	}
+
+	if !validCollection {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	collection, err := collections.GetFilms(collectionName)
 
 	if err != nil {
