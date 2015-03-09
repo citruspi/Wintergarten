@@ -259,11 +259,9 @@ func Get(film_id string) (Film, error) {
 
 	availability, err := determineAvailability(film)
 
-	if err != nil {
-		return film, err
+	if err == nil {
+		film.Availability = &availability
 	}
-
-	film.Availability = &availability
 
 	marshalled, err := json.Marshal(film)
 
