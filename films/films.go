@@ -357,46 +357,44 @@ func determineAvailability(film Film) (FilmAvailability, error) {
 		}
 	}
 
-	if canIStreamItID == "" {
-		// not available
-	}
+	if canIStreamItID != "" {
+		mediaTypes := []string{"rental", "purchase"}
 
-	mediaTypes := []string{"rental", "purchase"}
+		for _, mediaType := range mediaTypes {
+			var buffer bytes.Buffer
 
-	for _, mediaType := range mediaTypes {
-		var buffer bytes.Buffer
+			buffer.WriteString("http://www.canistream.it/services/query?movieId=")
+			buffer.WriteString(canIStreamItID)
+			buffer.WriteString("&attributes=1&mediaType=")
+			buffer.WriteString(mediaType)
 
-		buffer.WriteString("http://www.canistream.it/services/query?movieId=")
-		buffer.WriteString(canIStreamItID)
-		buffer.WriteString("&attributes=1&mediaType=")
-		buffer.WriteString(mediaType)
-
-		resp, err = http.Get(string(buffer.Bytes()))
-
-		if err != nil {
-			return availability, err
-		}
-
-		defer resp.Body.Close()
-
-		body, err = ioutil.ReadAll(resp.Body)
-
-		if err != nil {
-			return availability, err
-		}
-
-		switch mediaType {
-		case "rental":
-			err = json.Unmarshal(body, &availability.Rental)
+			resp, err = http.Get(string(buffer.Bytes()))
 
 			if err != nil {
 				return availability, err
 			}
-		case "purchase":
-			err = json.Unmarshal(body, &availability.Purchase)
+
+			defer resp.Body.Close()
+
+			body, err = ioutil.ReadAll(resp.Body)
 
 			if err != nil {
 				return availability, err
+			}
+
+			switch mediaType {
+			case "rental":
+				err = json.Unmarshal(body, &availability.Rental)
+
+				if err != nil {
+					return availability, err
+				}
+			case "purchase":
+				err = json.Unmarshal(body, &availability.Purchase)
+
+				if err != nil {
+					return availability, err
+				}
 			}
 		}
 	}
