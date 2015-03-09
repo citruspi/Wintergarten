@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+
+	"github.com/citruspi/wintergarten/films"
 )
 
 type TMDbResponse struct {
@@ -51,6 +54,12 @@ func Films(query string) ([]Film, error) {
 	}
 
 	collection = response.Results
+
+	for _, film := range collection {
+		filmID := strconv.Itoa(film.ID)
+
+		go films.Prepare(filmID)
+	}
 
 	return collection, nil
 }
