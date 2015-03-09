@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 )
 
 type Film struct {
@@ -17,7 +19,8 @@ type Film struct {
 			Title    string `json:"title"`
 		} `json:"titles"`
 	} `json:"alternative_titles"`
-	BackdropPath        string `json:"backdrop_path"`
+	Availability        *FilmAvailability `json:"availability,omitempty"`
+	BackdropPath        string            `json:"backdrop_path"`
 	BelongsToCollection struct {
 		BackdropPath string `json:"backdrop_path"`
 		ID           int    `json:"id"`
@@ -143,6 +146,43 @@ type Film struct {
 	VoteCount   int     `json:"vote_count"`
 }
 
+type FilmAvailability struct {
+	Streaming *struct {
+	} `json:"streaming,omitempty"`
+	Rental *struct {
+		AmazonVideo *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"amazon_video_rental,omitempty"`
+		GooglePlay *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"android_rental,omitempty"`
+		AppleiTunes *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"apple_itunes_rental,omitempty"`
+		SonyEntertainment *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"sony_rental,omitempty"`
+		Youtube *struct {
+			URL     string `json:"direct_url,omitempty"`
+			ID      string `json:"external_id,omitempty"`
+			Price   string `json:"price,omitempty"`
+			Checked int64  `json:"date_checked,omitempty"`
+		} `json:"youtube_rental,omitempty"`
+	} `json:"rental,omitempty"`
+}
+
 var (
 	api_key string
 )
@@ -157,6 +197,12 @@ func init() {
 
 func Get(film_id string) (Film, error) {
 	film, err := queryTMDb(film_id)
+
+	if err != nil {
+		return film, err
+	}
+
+	film.Availability, err = determineAvailability(film)
 
 	if err != nil {
 		return film, err
@@ -201,4 +247,95 @@ func queryTMDb(film_id string) (Film, error) {
 	}
 
 	return film, nil
+}
+
+func determineAvailability(film Film) (FilmAvailability, error) {
+	type searchResult struct {
+		Id    string `json:"_id"`
+		Links struct {
+			IMDb string `json:"imdb"`
+		} `json:"links"`
+	}
+
+	var availability FilmAvailability
+	var results []searchResult
+
+	var cisi_url *url.URL
+
+	cisi_url, err := url.Parse("http://www.canistream.it/services/search")
+
+	if err != nil {
+		return availability, err
+	}
+
+	parameters := url.Values{}
+	parameters.Add("movieName", film.Title)
+
+	cisi_url.RawQuery = parameters.Encode()
+
+	resp, err := http.Get(cisi_url.String())
+
+	if err != nil {
+		return availability, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return availability, err
+	}
+
+	err = json.Unmarshal(body, &results)
+
+	if err != nil {
+		return availability, err
+	}
+
+	var canIStreamItID string
+
+	for _, result := range results {
+		var imdb_id string
+
+		if result.Links.IMDb != "" {
+			imdb_id = strings.Split(result.Links.IMDb, "/")[4]
+		}
+
+		if imdb_id == film.ImdbID {
+			canIStreamItID = result.Id
+		}
+	}
+
+	if canIStreamItID == "" {
+		// not available
+	}
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("http://www.canistream.it/services/query?movieId=")
+	buffer.WriteString(canIStreamItID)
+	buffer.WriteString("&attributes=1&mediaType=rental")
+
+	resp, err = http.Get(string(buffer.Bytes()))
+
+	if err != nil {
+		return availability, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err = ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return availability, err
+	}
+
+	err = json.Unmarshal(body, &availability.Rental)
+
+	if err != nil {
+		return availability, err
+	}
+
+	return availability, nil
 }
