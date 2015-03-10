@@ -224,7 +224,7 @@ func init() {
 func Get(film_id string) (Film, error) {
 	var film Film
 
-	client, err := redis.Dial("tcp", "localhost:6379")
+	client, err := redis.Dial("tcp", conf.Cache.Address)
 
 	if err != nil {
 		log.Fatal(err)
@@ -274,7 +274,7 @@ func Get(film_id string) (Film, error) {
 func Prepare(film_id string) {
 	var film Film
 
-	client, err := redis.Dial("tcp", "localhost:6379")
+	client, err := redis.Dial("tcp", conf.Cache.Address)
 
 	if err != nil {
 		return
