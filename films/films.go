@@ -266,7 +266,10 @@ func Get(film_id string) (Film, error) {
 	marshalled, err := json.Marshal(film)
 
 	if err == nil {
-		_ = client.Cmd("set", film_id, marshalled)
+		r := client.Cmd("set", film_id, marshalled)
+		if r.Err == nil {
+			_ = client.Cmd("expire", film_id, 3600)
+		}
 	}
 
 	return film, nil
@@ -309,7 +312,10 @@ func Prepare(film_id string) {
 	marshalled, err := json.Marshal(film)
 
 	if err == nil {
-		_ = client.Cmd("set", film_id, marshalled)
+		r := client.Cmd("set", film_id, marshalled)
+		if r.Err == nil {
+			_ = client.Cmd("expire", film_id, 3600)
+		}
 	}
 
 	return
