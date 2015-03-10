@@ -4,7 +4,8 @@
     },
     "cache": {
         "ttl": 3600,
-        "address": "127.0.0.1:6379"
+        "address": "127.0.0.1:6379",
+        "enabled": true
     },
     "tmdb": {
         "api_key": "?"

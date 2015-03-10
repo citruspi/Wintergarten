@@ -14,6 +14,7 @@ type Configuration struct {
 	Cache struct {
 		TTL     int    `json:"ttl"`
 		Address string `json:"address"`
+		Enabled bool   `json:"enabled"`
 	} `json:"cache"`
 	TMDb struct {
 		APIKEY string `json:"api_key"`
