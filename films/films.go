@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
+	"github.com/citruspi/wintergarten/configuration"
 	"github.com/fzzy/radix/redis"
 )
 
@@ -214,15 +214,11 @@ type FilmAvailability struct {
 }
 
 var (
-	api_key string
+	conf configuration.Configuration
 )
 
 func init() {
-	api_key = os.Getenv("TMDB_API_KEY")
-
-	if api_key == "" {
-		log.Fatal("Missing API key")
-	}
+	conf = configuration.Init()
 }
 
 func Get(film_id string) (Film, error) {
@@ -268,7 +264,7 @@ func Get(film_id string) (Film, error) {
 	if err == nil {
 		r := client.Cmd("set", film_id, marshalled)
 		if r.Err == nil {
-			_ = client.Cmd("expire", film_id, 3600)
+			_ = client.Cmd("expire", film_id, conf.Cache.TTL)
 		}
 	}
 
@@ -314,7 +310,7 @@ func Prepare(film_id string) {
 	if err == nil {
 		r := client.Cmd("set", film_id, marshalled)
 		if r.Err == nil {
-			_ = client.Cmd("expire", film_id, 3600)
+			_ = client.Cmd("expire", film_id, conf.Cache.TTL)
 		}
 	}
 
@@ -330,7 +326,7 @@ func queryTMDb(film_id string) (Film, error) {
 	buffer.WriteString("http://api.themoviedb.org/3/movie/")
 	buffer.WriteString(film_id)
 	buffer.WriteString("?api_key=")
-	buffer.WriteString(api_key)
+	buffer.WriteString(conf.TMDb.APIKEY)
 	buffer.WriteString("&append_to_response=")
 	buffer.WriteString("alternative_titles,credits,images,keywords,releases,videos,similar")
 
