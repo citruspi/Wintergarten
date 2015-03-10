@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
+	"github.com/citruspi/wintergarten/configuration"
 	"github.com/citruspi/wintergarten/films"
 )
 
@@ -37,15 +37,11 @@ type Film struct {
 }
 
 var (
-	api_key string
+	conf configuration.Configuration
 )
 
 func init() {
-	api_key = os.Getenv("TMDB_API_KEY")
-
-	if api_key == "" {
-		log.Fatal("Missing API key")
-	}
+	conf = configuration.Init()
 }
 
 func GetFilms(collectionName string) ([]Film, error) {
@@ -76,7 +72,7 @@ func queryTMDb(collectionName string) (TMDbResponse, error) {
 	buffer.WriteString("http://api.themoviedb.org/3/movie/")
 	buffer.WriteString(collectionName)
 	buffer.WriteString("?api_key=")
-	buffer.WriteString(api_key)
+	buffer.WriteString(conf.TMDb.APIKEY)
 
 	url = string(buffer.Bytes())
 
