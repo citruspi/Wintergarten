@@ -8,7 +8,6 @@ import (
 
 type Configuration struct {
 	Web struct {
-		Port    int    `json:"port"`
 		Address string `json:"address"`
 	} `json:"web"`
 	Cache struct {
