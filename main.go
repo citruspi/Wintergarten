@@ -5,10 +5,19 @@ import (
 	"net/http"
 
 	"github.com/citruspi/wintergarten/collections"
+	"github.com/citruspi/wintergarten/configuration"
 	"github.com/citruspi/wintergarten/films"
 	"github.com/citruspi/wintergarten/search"
 	"github.com/gorilla/mux"
 )
+
+var (
+	conf configuration.Configuration
+)
+
+func init() {
+	conf = configuration.Init()
+}
 
 func getFilm(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -100,5 +109,5 @@ func main() {
 	r.HandleFunc("/films/search/{query}/", searchFilms)
 
 	http.Handle("/", r)
-	http.ListenAndServe(":8000", nil)
+	http.ListenAndServe(conf.Web.Address, nil)
 }
