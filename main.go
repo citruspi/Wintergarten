@@ -95,9 +95,9 @@ func getFilmCollection(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/film/{id:[0-9]+}/", getFilm)
-	r.HandleFunc("/collection/films/{collection}/", getFilmCollection)
-	r.HandleFunc("/search/films/{query}/", searchFilms)
+	r.HandleFunc("/films/title/{id:[0-9]+}/", getFilm)
+	r.HandleFunc("/films/collection/{collection}/", getFilmCollection)
+	r.HandleFunc("/films/search/{query}/", searchFilms)
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8000", nil)
