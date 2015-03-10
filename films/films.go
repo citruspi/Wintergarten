@@ -224,30 +224,32 @@ func init() {
 func Get(film_id string) (Film, error) {
 	var film Film
 
-	client, err := redis.Dial("tcp", conf.Cache.Address)
+	if conf.Cache.Enabled {
+		client, err := redis.Dial("tcp", conf.Cache.Address)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	defer client.Close()
+		defer client.Close()
 
-	err = client.Cmd("PING").Err
-	if err != nil {
-		log.Fatal(err)
-	}
+		err = client.Cmd("PING").Err
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	s, err := client.Cmd("get", film_id).Str()
-
-	if err == nil {
-		err = json.Unmarshal([]byte(s), &film)
+		s, err := client.Cmd("get", film_id).Str()
 
 		if err == nil {
-			return film, nil
+			err = json.Unmarshal([]byte(s), &film)
+
+			if err == nil {
+				return film, nil
+			}
 		}
 	}
 
-	film, err = queryTMDb(film_id)
+	film, err := queryTMDb(film_id)
 
 	if err != nil {
 		return film, err
@@ -262,9 +264,24 @@ func Get(film_id string) (Film, error) {
 	marshalled, err := json.Marshal(film)
 
 	if err == nil {
-		r := client.Cmd("set", film_id, marshalled)
-		if r.Err == nil {
-			_ = client.Cmd("expire", film_id, conf.Cache.TTL)
+		if conf.Cache.Enabled {
+			client, err := redis.Dial("tcp", conf.Cache.Address)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer client.Close()
+
+			err = client.Cmd("PING").Err
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			r := client.Cmd("set", film_id, marshalled)
+			if r.Err == nil {
+				_ = client.Cmd("expire", film_id, conf.Cache.TTL)
+			}
 		}
 	}
 
@@ -272,6 +289,10 @@ func Get(film_id string) (Film, error) {
 }
 
 func Prepare(film_id string) {
+	if !conf.Cache.Enabled {
+		return
+	}
+
 	var film Film
 
 	client, err := redis.Dial("tcp", conf.Cache.Address)
