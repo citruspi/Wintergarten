@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 type Configuration struct {
@@ -21,8 +22,21 @@ type Configuration struct {
 
 func Init() Configuration {
 	var conf Configuration
+	var confPath string
+	confPaths := []string{"/etc/wintergarten.conf", "/etc/wintergarten.json", "wintergarten.conf", "wintergarten.json"}
 
-	content, err := ioutil.ReadFile("wintergarten.conf")
+	for _, path := range confPaths {
+		if _, err := os.Stat(path); err == nil {
+			confPath = path
+			break
+		}
+	}
+
+	if confPath == "" {
+		log.Fatal("No configuration found.")
+	}
+
+	content, err := ioutil.ReadFile(confPath)
 
 	if err != nil {
 		log.Fatal(err)
