@@ -1,0 +1,24 @@
+language: go
+
+go:
+- 1.3
+
+install:
+- github.com/fzzy/radix/redis
+- github.com/gorilla/mux
+
+script: true
+
+before_deploy: make release
+
+deploy:
+  provider: s3
+  access_key_id: AKIAIKAOQMWIKVZMP4BQ
+  secret_access_key:
+    secure: O59lrvBveAPq3giZIo2/CLphF3bLwWyRS7NLXwH6xmBWKX3a/zFzqFwU/L2jMWb/4UnnQzg6F5jIVKDIz5Lw3Fvz51em4Z9Oi5Yig1l8DlWzRLOKOBtzGxx/ZJ0uT17yHsBNlayj/iq6drqWOjSfqjMVyC+n0Hzdts/94iboALI=
+  bucket: releases.wintergarten
+  local-dir: release
+  skip_cleanup: true
+  acl: public_read
+  on:
+    repo: citruspi/wintergarten
