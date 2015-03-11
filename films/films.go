@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -227,24 +226,22 @@ func Get(film_id string) (Film, error) {
 	if conf.Cache.Enabled {
 		client, err := redis.Dial("tcp", conf.Cache.Address)
 
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer client.Close()
-
-		err = client.Cmd("PING").Err
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		s, err := client.Cmd("get", film_id).Str()
-
 		if err == nil {
-			err = json.Unmarshal([]byte(s), &film)
 
+			defer client.Close()
+
+			err = client.Cmd("PING").Err
 			if err == nil {
-				return film, nil
+
+				s, err := client.Cmd("get", film_id).Str()
+
+				if err == nil {
+					err = json.Unmarshal([]byte(s), &film)
+
+					if err == nil {
+						return film, nil
+					}
+				}
 			}
 		}
 	}
@@ -267,20 +264,18 @@ func Get(film_id string) (Film, error) {
 		if conf.Cache.Enabled {
 			client, err := redis.Dial("tcp", conf.Cache.Address)
 
-			if err != nil {
-				log.Fatal(err)
-			}
+			if err == nil {
+				defer client.Close()
 
-			defer client.Close()
+				err = client.Cmd("PING").Err
 
-			err = client.Cmd("PING").Err
-			if err != nil {
-				log.Fatal(err)
-			}
+				if err == nil {
+					r := client.Cmd("set", film_id, marshalled)
 
-			r := client.Cmd("set", film_id, marshalled)
-			if r.Err == nil {
-				_ = client.Cmd("expire", film_id, conf.Cache.TTL)
+					if r.Err == nil {
+						_ = client.Cmd("expire", film_id, conf.Cache.TTL)
+					}
+				}
 			}
 		}
 	}
